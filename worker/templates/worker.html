@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task List</title>
+</head>
+<body>
+    <h1>Served from {{ port }}</h1>
+    <h1>Task List</h1>
+    <ul>
+        {% for row in tasks %}
+            <li>{{ row[0] }} - {{ row[1] }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

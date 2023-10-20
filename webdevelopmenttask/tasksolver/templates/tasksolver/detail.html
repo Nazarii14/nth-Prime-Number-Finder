@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Enter a number{% endblock %}
+{% block content %}
+
+<h1>Enter a number</h1>
+
+{% if form.errors %}
+<p>You have to enter a valid number.</p>
+{% else %}
+<p>Please, enter a number to process.</p>
+{% endif %}
+<p id="error-message"></p>
+
+<div class="main-content">
+  <form id="number-form" method="post" action="/task/add_task/">
+    {% csrf_token %}
+    <label for="number">Number:</label>
+    <input id="number" name="number" type="number" value="100" required />
+    <input id="submit" name="submit" type="submit" value="Submit" />
+  </form>
+
+  <div class="tasks">
+    <h2 id='task-number'>Your Tasks: ({{ user_tasks|length }})</h2>
+    
+    <div class='task-list-container'>
+      <ul id='task-list'>
+        {% for task in user_tasks %}
+        <li id='tasks' class='tasks' id="task-{{ task.id }}">
+          Number: {{ task.number }} ({{ task.is_running|yesno:"Running,Completed" }}) Result: {{task.result}}
+          <progress value="{{ task.completion_percentage }}" max="100"></progress>
+          <a>{{task.completion_percentage}}%</a>
+          <button class="delete-task" data-task-id="{{ task.id }}">Delete</button>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).on('submit', '#number-form', async function(e) {
+    e.preventDefault();
+    var number = $('#number').val();
+    var csrfToken = $('input[name=csrfmiddlewaretoken]').val();
+    const errorMessage = document.getElementById("error-message");
+    const taskNumberElement = document.getElementById('task-number');
+
+    try {
+        var data = await $.ajax({
+            type: 'POST',
+            url: '/task/add_task/',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'Content-Type': 'application/json',
+            },
+            data: JSON.stringify({
+              'number': number
+            }),
+            success: function(response) {
+              if (response.status === "error") {
+                errorMessage.innerHTML = response.message;
+              } else {
+                  errorMessage.innerHTML = "";
+              }
+              taskNumberElement.innerHTML = `Your Tasks: (${response.count})\tYou can add ${response.number_of_tasks_left} more tasks :)`;
+            },
+            error: function(xhr, status, error) {
+              if (xhr.status === 400) {
+                var response = JSON.parse(xhr.responseText);
+                errorMessage.innerHTML = response.message;
+              } else {
+                  console.log('Error:', error);
+              }
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+    }
+  });
+</script>
+
+{% endblock %}
