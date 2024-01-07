@@ -2,7 +2,7 @@
 ### Web-Development project for LNU Task
 ### Technologies used: 
  - Python
- - Django Rest Framework
+ - Django
  - Flask
  - nginx
  - PostgreSQL
